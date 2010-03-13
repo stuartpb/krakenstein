@@ -1,0 +1,26 @@
+[QUOTE=Nocta;13730691]Wow. Just Wow.
+But you can type "+left" and "+attack" in the console and stay there, healing everybody in sight. Abusing it is easy with scripts ... Healing Aimbot Incoming ! ("H.A.I. guys !")[/QUOTE]
+
+With the addition of [post=13934974]coil-up times[/post] requiring Medics to linger on their targets, this "strategy" is made impotent, as the beam would detach from each player it touched nearly as fast as it had attached.
+
+Before I thought of this, here were the ideas I had brainstormed for suppressing this behavior with a beam that instantly attaches to targets:
+[LIST]
+[*]Decrease the range of the beams with continued motion in one direction (think of a string "winding up" when its spool is rotated- the same constraints would apply to the beams).
+[*]Reduce beam duration with increased angle away from target (ie. if the Medic is more than 120 degrees away from their target, the beam duration drops down to .125 seconds, meaning unless it was a quick glance away the beam is immediately dropped)
+[*]A healing falloff as the beam's timer runs down (encouraging Medics to optimize their time between 'touches')
+[*]A random (so it couldn't also be scripted against) jitter/kickback (that moves your aim, a la Day of Defeat), possibly in response to rotation speed (so if the gun was moving left at 360 degrees a second, it would drift out of the field where targets are)
+[*]A rotation speed cap to 180 degrees/second while active
+[/LIST]
+
+[QUOTE=Rawr;13731668]Lovely idea. I've always been a big supporter of any multi-healing mediguns, and this one is no exception. I also like the über, and the amount of thought you put into the aesthetic and thematical design is admirable (or it just came to you within the timeframe of a second, I dunno). Still, it's great. I like how so many things fit into one subtle design. 
+[/QUOTE]
+
+Thanks! The initial mechanic came to me [thread=1093738]last December[/thread] when I was reading one of the dual-beam Medigun proposals (the [thread=1089589]Zwitterhealer[/thread], specifically). After picturing how numerous beams coming from one point would look, I went on Wiktionary for synonyms of "squid" and its German terms. This brought me to the Kraken, which I was delighted to find had been loan-worded into German. (Unfortunately, as I couldn't find any more interesting terms for 'healing', I just stuck with the 'medik-' root and launched it as "The Medikraken".) I spent the time after posting it musing on the problem it shared with so many other Medic weapon proposals: its name wasn't sufficiently imposing, and didn't draw enough from popular perceptions of Germany. After thinking about how the aperture would need to be widened to permit multiple beams, I thought of the commonly-recognized "stein", and from there it was a hop, skip, and a jump to the rest of the design.
+
+[QUOTE=Rawr;13731668]
+However, I feel that the slowdown is a bit too much. You have to consider the running from spawn to the battlefield. The slowdown will leave people without a medic for longer times, and it will reduce the medic's survivability because of worse dodging, and it will leave the medic with some trouble catching up with those he wants to heal. I think I'd think of some other downside.
+[/QUOTE]
+
+I'd thought about this (see the bar graph and the paragraph following it). The conclusion I came to is that the one-fifteenth reduction in travel times wouldn't be that significant of a decrease in time without a Medic (especially if nobody has to wait for a heal once he arrives), and that dodging ability would only drop to match Snipers, Engineers, Spies, and Pyros, who seem to get by just fine (and, as the Medic would have more teammates near him who absorb damage, a slight reduction in dodging ability seems only fair). As for problems catching up with those he wants to heal, the design of The Krakenstein is based around others coming to the Medic to be healed, so the Medic would not have use for catching up with someone they wish to heal.
+
+[CENTER][I](Further discussion on slowdown in [post=13807619]my next reply, again 3 posts down![/post])[/I][/CENTER]

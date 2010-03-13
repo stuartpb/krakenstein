@@ -1,0 +1,3 @@
+[QUOTE=rickyman4888;13979404]all the program needs is a smd exporter... some 1 make a smd explorter for  Moment of Inspiration[/QUOTE]
+
+Well, an MoI model needs to go through another modeling program anyway (since MoI doesn't support non-modeling features such as textures or animation), so it wouldn't make much sense to create an [URL="http://developer.valvesoftware.com/wiki/SMD_export"]SMD exporter[/URL] for Moment of Inspiration. Anyway, the model I made was just a quick prototype I put together to demonstrate the general shape I had in mind (and for use in the "in action" pictures). It's nowhere near suitable for actual use in-game.

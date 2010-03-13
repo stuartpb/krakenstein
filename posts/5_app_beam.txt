@@ -1,0 +1,24 @@
+[QUOTE=PSI Guy;13933791]I like this idea! The whole 'heals anyone you've looked at the last second' seems like it'll kill my hand, though.[/QUOTE]
+
+Now that you mention it, one second between direct-line-of-sight-to-each-player is a little too repetitive-motion-injury-inducing, while providing no benefit for human interaction over a rudimentary aimbot. Giving thought to this last night, I came up with a more involving mechanic, that would emphasize skill over pure speed.
+
+To add skill to the Krakenstein (a skill mapping similar to a Medic's existing experience in juggling overheal) and make it less of a blind "aimbot magnet", Medics would have to keep focused on a target to increase the attach time up to the maximum 2 seconds until detachment. The time it would "coil up" would be multiplied by 1 + the number of teammates being healed, leading to a reasonable difficulty curve in healing larger numbers of patients at once.
+
+I arrived at this conclusion by writing a small IUPLua proof-of-concept app to playtest with:
+
+[CENTER][IMG]http://img133.imageshack.us/img133/4052/coilup.png[/IMG][/CENTER]
+
+Each square represents a player (the colors were arbitrarily chosen just to distinguish each square), and the bars above each square represent the time until the beam would detach from that player. To target a player, you place your cursor within the square (no button holding involved).
+
+You can download the script yourself from [url=http://bazaar.launchpad.net/~stuart/krakenstein/main/files]the Loggerhead page[/url] for its Bazaar repo ("[B]krakentest.wlua[/B]" - click the little green icon to the far right to download). To run it, you will need IUP 3.0 and a [url=http://lua.org]Lua[/url] interpreter. I personally use [url=http://luaforwindows.luaforge.net/]Lua for Windows[/url] (which doesn't include IUP 3.0 yet as of the 5.1.4-30 release), but you can also extract "[B]wlua5.1.exe[/B]" from [url=http://sourceforge.net/projects/luabinaries/files/5.1.4/Executables/lua5_1_4_Win32_bin.zip/download]the LuaBinaries distribution[/url] into the same folder as the files from [url=http://sourceforge.net/projects/iup/files/3.0/Windows%20Libraries/iup3_0_Win32_dll8_lib.zip/download]this precompiled IUP library .zip package[/url] (specifically, "[B]iup.dll[/B]" and "[B]iuplua51.dll[/B]") and run the script from there (dragging and dropping it onto the .EXE should work). The .wlua file is just text- you can open it with a text editor such as Notepad to read and edit it. It's under a Creative Commons No Rights Reserved license, so you can basically do whatever you want with it.
+
+[CENTER][SIZE="5"][b]SO HOW WOULD THE BEAM LOOK, ANYWAY?[/b][/SIZE][/CENTER]
+
+In-game, this time could be visualized with the tentacle-like beam's "coils" around the target:
+
+[CENTER][IMG]http://img203.imageshack.us/img203/4472/tentacle.jpg[/IMG]
+[I]("Dents" effect applied to give inter-panel waviness- the raggedness is an unintended side effect.)[/I][/CENTER]
+
+As the time runs down, the beam would slowly uncoil from the target, and as it is refilled, it coils back up. If the beam were to coil around a player 4 times with a maximum of 2 seconds, there would be about half a second between each panel here (the beam would retract at about 2 target circumferences per second).
+
+[CENTER][I](My next reply: a note on the model and Moment of Inspiration's capabilities, [post=13934974]5 posts down.[/post])[/I][/CENTER]

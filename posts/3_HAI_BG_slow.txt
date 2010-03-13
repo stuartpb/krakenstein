@@ -1,16 +1,7 @@
 [QUOTE=Nocta;13730691]Wow. Just Wow.
 But you can type "+left" and "+attack" in the console and stay there, healing everybody in sight. Abusing it is easy with scripts ... Healing Aimbot Incoming ! ("H.A.I. guys !")[/QUOTE]
 
-With the addition of [post=13934974]coil-up times[/post] requiring Medics to linger on their targets, this "strategy" is made impotent, as the beam would detach from each player it touched nearly as fast as it had attached.
-
-Before I thought of this, here were the ideas I had brainstormed for suppressing this behavior with a beam that instantly attaches to targets:
-[LIST]
-[*]Decrease the range of the beams with continued motion in one direction (think of a string "winding up" when its spool is rotated- the same constraints would apply to the beams).
-[*]Reduce beam duration with increased angle away from target (ie. if the Medic is more than 120 degrees away from their target, the beam duration drops down to .125 seconds, meaning unless it was a quick glance away the beam is immediately dropped)
-[*]A healing falloff as the beam's timer runs down (encouraging Medics to optimize their time between 'touches')
-[*]A random (so it couldn't also be scripted against) jitter/kickback (that moves your aim, a la Day of Defeat), possibly in response to rotation speed (so if the gun was moving left at 360 degrees a second, it would drift out of the field where targets are)
-[*]A rotation speed cap to 180 degrees/second while active
-[/LIST]
+With the addition of [post=13934974]coil-up times[/post] requiring Medics to linger on their targets, this "strategy" is made impotent, as the beam would detach from each player it touched nearly as fast as it had attached. (Before I came up with this mechanic, I had a list of possibilities to combat this abuse which I have since removed. If you want to read it, you can check [url=http://bazaar.launchpad.net/~stuart/krakenstein/main/annotate/2/posts/3_HAI_BG_slow.txt]the revision of this post before I removed it[/url].)
 
 [QUOTE=Rawr;13731668]Lovely idea. I've always been a big supporter of any multi-healing mediguns, and this one is no exception. I also like the über, and the amount of thought you put into the aesthetic and thematical design is admirable (or it just came to you within the timeframe of a second, I dunno). Still, it's great. I like how so many things fit into one subtle design. 
 [/QUOTE]

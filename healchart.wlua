@@ -5,31 +5,65 @@ require "iuplua"
 require "iuplua_pplot"
 require "cdluacontextplus" --to get GDI+ antialiasing and other delights
 
---returns health restored per second if it has been time_since_damage
---since the player was hit.
-function healrate(time_since_damage)
-  local mintime=10
-  local ramptime=5
-  local multiplier=3
-  local baserate=24
+  --baserate: Base healing rate.
+  --mintime: Number of seconds until beginning the ramp up.
+  --ramplength: Number of seconds until reaching the max rate.
+  --multiplier: Multiplier of max rate.
+function healing(baserate, mintime, ramplength, multiplier)
+  --some constants from these parameters...
+  local increase = multiplier-1
+  local mintime_health = mintime*baserate
+  local acceleration = (baserate*increase)/ramplength
+  local maxtime = mintime+ramplength
+  local maxrate = baserate*multiplier
+  local maxtime_health = mintime_health + (acceleration*ramplength^2)/2+ramplength*baserate
 
-  local maxtime=mintime+ramptime
+  --Yeah, I'm using my own function name for a variable inside the function, so?
+  --This function is NOT going to need recursion.
+  local healing={}
 
-  return (((math.max(mintime,math.min(maxtime,time_since_damage))-mintime)/ramptime*(multiplier-1))+1)*baserate
+  --returns health restored per second if it has been time_since_damage
+  --since the player was hit.
+  function healing.healrate(time_since_damage)
+    return (((math.max(mintime,math.min(maxtime,time_since_damage))-mintime)/ramplength*increase)+1)*baserate
+  end
+
+  --Returns total health recovered if it has been (time) seconds after last taking damage.
+  function healing.recovery(time)
+    if time <= mintime then
+      return baserate*time
+    elseif time < maxtime then
+      local ramptime = time-mintime
+      return mintime_health
+        +(acceleration*ramptime^2)/2
+        +ramptime*baserate
+    else
+      return maxtime_health + maxrate*(time-maxtime)
+    end
+  end
+
+  return healing
 end
 
-function health_recovered(time_healing, last_damage_time)
-  return
-end
+medigun = healing(24, 10, 5, 3)
+krakenstein = healing(12, 4, 8, 4)
 
---returns function defining player health (assuming players don't go more
---than 10 seconds without being hit)
+--returns function defining player health under fire
 function healingdamage(init_health, max_health, hits_per_sec, damage_per_hit,
-  heal_start_time, cover_start_time)
+  heal_start_time, dmg_end_time)
   return function(time)
-    return math.min(max_health, init_health
-      -(math.floor(hits_per_sec*math.min(time,cover_start_time or time))*damage_per_hit)
-      +(math.max(time-(heal_start_time or time),0))*24)
+    local final_health=
+      init_health - math.floor(
+        hits_per_sec * math.min(
+          time, dmg_end_time or time)
+        ) * damage_per_hit
+    if heal_start_time and time > heal_start_time then
+      --assuming the rate-of-fire is more than .1 hits per second
+      --causing the heal rate to never go above 24 HP/s
+      --seems like a safe assumption
+      final_health = final_health+(time-heal_start_time)*24
+    end
+    return math.min(max_health, final_health)
   end
 end
 
@@ -38,55 +72,84 @@ soldier_assisted = healingdamage(200, 300, 4, 16, 0)
 soldier_takes_cover = healingdamage(200, 300, 4, 16, 2.5, 3)
 soldier_heavy = healingdamage(200, 300, 10, 30, 1, 2)
 
-healthgraph=  iup.pplot{marginleft=60,marginbottom=50,
-  rastersize="640x480",
-  AXS_YAUTOMIN="NO", AXS_YMIN=0,
-  grid="YES",
-  legendshow="YES",
-  ["USE_GDI+"]="YES",
-  title="Rates of Healing", --"Health Recovery and Taking Damage",
-  AXS_YLABEL="Health per second", --"Health",
-  AXS_XLABEL="Seconds since last damage taken"--"Time (in seconds)"
+function chart(start, finish, resolution, attributes)
+  --Constant!
+  local increment=1/resolution
+
+  local pplot= iup.pplot{marginleft=60,marginbottom=50,
+    rastersize="640x480",
+    AXS_XAUTOMIN="NO", AXS_XMIN=start,
+    AXS_XAUTOMAX="NO", AXS_XMAX=finish,
+    AXS_XCROSSORIGIN="NO",AXS_YCROSSORIGIN="NO", --so you can always see the origin
+    AXS_YAUTOMIN="NO", AXS_YMIN=0,
+    grid="YES",
+    legendshow="YES",
+    ["USE_GDI+"]="YES",
   }
 
-local starttime=0
-local endtime=20
-local resolution=12
-
-function graphalive(f,legend)
-  local i, lasthealth =starttime*resolution, f(starttime)
-  iup.PPlotBegin(healthgraph,0)
-  while i<endtime*resolution and lasthealth>0 do
-    iup.PPlotAdd(healthgraph, i/resolution, lasthealth)
-    i=i+1
-    lasthealth=f(i/resolution)
-    if lasthealth<0 then lasthealth=0 end
+  for k,v in pairs(attributes) do
+    pplot[k]=v
   end
-  iup.PPlotAdd(healthgraph, i/resolution, lasthealth)
-  iup.PPlotEnd(healthgraph)
-  healthgraph.ds_legend = legend
-  healthgraph.ds_linewidth = 2
+
+  --following the naming pattern used above for healing- as before, it doesn't matter
+  local chart={}
+
+  local function finishline(...)
+    local legend = ...
+    pplot.ds_legend = legend
+    pplot.ds_linewidth = 2
+  end
+
+  --Graphs a function along the plot.
+  function chart.graph(f,...)
+    iup.PPlotBegin(pplot,0)
+    for x=start, finish, increment do
+      iup.PPlotAdd(pplot, x, f(x))
+    end
+    iup.PPlotEnd(pplot)
+    finishline(...)
+  end
+
+  --Graphs a function until it hits 0 (the player dies).
+  function chart.graphalive(f,...)
+    local x, lasthealth = start, f(start)
+    iup.PPlotBegin(pplot,0)
+    while x<finish and lasthealth>0 do
+      iup.PPlotAdd(pplot, x, lasthealth)
+      x=x+increment
+      lasthealth=f(x)
+      if lasthealth<0 then lasthealth=0 end --never end below zero
+    end
+    iup.PPlotAdd(pplot, x, lasthealth)
+    iup.PPlotEnd(pplot)
+    finishline(...)
+  end
+
+  chart.pplot=pplot
+
+  return chart
 end
 
---graphalive(soldier_assisted,"Soldier with Medic buddy vs. L1 Sentry")
---graphalive(soldier_takes_cover,"Soldier vs. L1 sentry, Medic starts healing after 2.5 seconds, Soldier takes cover after 3")
+--~ soldiers=chart(0, 5.1, 1024, {
+--~   title="Health Recovery and Taking Damage",--"Cumulative Healing Over Time", --"Rates of Healing", --
+--~   AXS_YLABEL="Health",-- per second", --"Health",
+--~   AXS_XLABEL="Time (in seconds)"--"Seconds since last damage taken"--"Time (in seconds)"
+--~ })
 
-function ks(time_since_damage)
-  local mintime=4
-  local ramptime=8
-  local multiplier=4
-  local baserate=12
+--~ soldiers.graphalive(soldier_assisted,"Soldier with Medic buddy vs. L1 Sentry")
+--~ soldiers.graphalive(soldier_takes_cover,"Soldier vs. L1 sentry, Medic starts healing after 2.5 seconds, Soldier takes cover after 3")
 
-  local maxtime=mintime+ramptime
+health=chart(0, 20, 128, {
+  title="Healing Ramp", --"Cumulative Healing Over Time", --
+  AXS_YLABEL="Health per second",
+  AXS_XLABEL="Seconds since last damage taken"
+})
 
-  return (((math.max(mintime,math.min(maxtime,time_since_damage))-mintime)/ramptime*(multiplier-1))+1)*baserate
-end
-
-graphalive(healrate,"Medigun")
-graphalive(ks,"Krakenstein")
+health.graph(medigun.healrate,"Medigun")
+health.graph(krakenstein.healrate,"Krakenstein")
 
 chartwin=iup.dialog{
-  healthgraph
+  health.pplot
 }
 
 chartwin:show()

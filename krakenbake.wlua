@@ -174,7 +174,10 @@ do
     player.target = iup.canvas{
       rastersize = barwidth.."x"..barwidth,
       bgcolor = color(i)}
-    player.healthtext= iup.text{alignment="ACENTER",value=basehealth}
+    player.healthtext= iup.text{
+      alignment="ACENTER",
+      value=basehealth,
+      readonly="yes"}
     --The functions for the target to note when the cursor is on it.
     function player.target:enterwindow_cb()
       player.focus=true end

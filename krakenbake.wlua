@@ -46,7 +46,7 @@ local graph_width=600 --240 gives the old style thin bars and tiny targets
 --The height of the bars and the starting height of the target.
 --  Bar widths (etc) are now exclusively determined as
 --  graph_width/playercount.
-local targetheight, barheight = 30, 200
+local targetheight, barheight = 70, 200
 
 --This is the list of colors for the squares.
 local colors={
@@ -68,7 +68,6 @@ local timeres = .015
 --  each frame is a snap, but updating 27 progress bars is a bit more
 --  processor intensive. For this reason, updating progress bars is
 --  similarly throttled (although not as much as graphing).
-
 local graph_interval=showgraph and .25 or .1
 
 --How many seconds for the graph to span.
@@ -168,7 +167,8 @@ do
     string.gsub(iup.GetGlobal"DEFAULTFONT",--the default font
     " %d*$", string.format(" %i", --with the size replaced
     barwidth/3)) --This approximates a good "fill" of the default width
-  --determine heights of healthbars if no graph and create the table
+
+  --if no graph, determine heights for healthbars and create the table
   local overheal_height, health_height
   if showgraph==false then
     graph={}
@@ -181,23 +181,30 @@ do
     local player={}; players[i] = player
 
     --Create the controls for this player.
+    --The progress bar representing how far "coiled" the Krakenstein beam
+    --  is around the player.
     player.coilbar = iup.progressbar{
         rastersize = barwidth.."x"..barheight,
         orientation="vertical",
         max = maxcoil, expand="horizontal"}
+    --The colored area to place the cursor in to "target" the player
+    --  for healing.
     player.target = iup.canvas{
       rastersize = barwidth.."x"..targetheight,
       bgcolor = color(i)}
-    player.healthtext= iup.text{
-      alignment="ACENTER",
-      value=basehealth, rastersize=barwidth.."x",expand="horizontal",
-      fgcolor="64 64 64", bgcolor="192 192 192",
-      font=defaultbig,readonly="yes"}
     --The functions for the target to note when the cursor is on it.
     function player.target:enterwindow_cb()
       player.focus=true end
     function player.target:leavewindow_cb()
       player.focus=nil end
+    --The text box reading how much health the player has.
+    player.healthtext= iup.text{
+      alignment="ACENTER", expand="horizontal",
+      value=basehealth, rastersize=barwidth.."x",
+      fgcolor="64 64 64", bgcolor="192 192 192",
+      font=defaultbig,readonly="yes"}
+
+    --start everybody out with base health
     player.health=basehealth
     --start everybody out at the base heal rate
     player.undamaged=0
@@ -207,7 +214,7 @@ do
       alignment="ACENTER"}
 
     if showgraph==false then
-      --If there's no graph, make health bars
+      --If there's no graph, make health bars for each player
       player.overhealbar=iup.progressbar{
         rastersize = barwidth.."x"..overheal_height,
         orientation = "vertical",
@@ -263,8 +270,6 @@ end
 
 ------ Krakenstein / Medigun Toggle ---
 
-local labelcolor="192 192 192"
-
 local krakentoggle=iup.toggle{
   title="Krakenstein",
   value="ON"}
@@ -285,6 +290,7 @@ function meditoggle:action(state)
   end
 end
 
+--create the frame with this radio toggle
 local toggles=iup.frame{
   bgcolor="192 192 192",
   iup.radio{
@@ -293,9 +299,10 @@ local toggles=iup.frame{
       meditoggle}}}
 
 ---- Combat slider ----------------------------------------
+
 local combat= iup.val{
   max=nightmare,
-  min=0,
+  min=0, --by necessity cease-fire would be 0
   value=defaultcombat,
   --crazy val not naming its type argument!
   type="VERTICAL", [1]="VERTICAL",
@@ -303,10 +310,17 @@ local combat= iup.val{
   }
 
 ------ Labels for combat levels -------
+
+--Determine the bold version of the default font for the extremes
 local defaultbold=string.gsub(iup.GetGlobal"DEFAULTFONT",
   "(.+), (%d*)","%1, Bold %2")
+
+--Color for the labels
 local labelcolor="224 224 224"
+
+--Color for the exteres (the same color by default)
 local boldcolor=labelcolor
+
 local labels=iup.vbox{
   iup.label{title="More Gun", font=defaultbold, fgcolor=boldcolor},
   iup.label{title="Nightmare!", fgcolor=labelcolor},
@@ -323,20 +337,21 @@ local labels=iup.vbox{
 
 --A function that very slightly decreases a progress bar and re-increases it.
 --  Without this stupid hack, the progress bars on Windows Vista/7 will
---  slowly increase the progress bar to the value you've set it to,
+--  only slowly increase the green level to the value you've set it to,
 --  causing them to "snap" suddenly to the correct value when they start
---  decreasing.
+--  unexpectedly decreasing.
 local function jig(jigbar)
   jigbar.value = jigbar.value -.001
   jigbar.value = jigbar.value +.001
 end
 
---Create the timer that ticks constantly.
-local constantly = iup.timer{ time = 1000*timeres }
-
 -------------------------------------------------------------------------------
 -- Simulation Loop
 -------------------------------------------------------------------------------
+
+
+--Create the timer that runs the simulation by ticking constantly.
+local simulation = iup.timer{ time = 1000*timeres }
 
 do
 ---- Initialization ---------------------------------------
@@ -355,7 +370,7 @@ do
 
 ---- Loop Function ----------------------------------------
   --The function that is executed each frame.
-  function constantly:action_cb()
+  function simulation:action_cb()
 
     --The running total of players being healed this frame.
     local hp_new = 0
@@ -409,7 +424,7 @@ do
         --increase the count of players being healed this frame by one
         hp_new=hp_new+1
 
-        --heal this player (up to the max)
+        --heal this player (but not beyond the max)
         player.health = math.min(player.health +
           healrate(player.undamaged)*timeres,
           maxhealth)
@@ -443,11 +458,17 @@ do
       end
 
 ------ Health Display -----------------
+      --update the displayed value
       player.healthtext.value=string.format("%i",player.health)
+      --update the color
       player.healthtext.bgcolor=
+        --light grey if the player is overhealed
         player.health > basehealth and "224 224 224"
-        or player.health > basehealth/2 and  "192 192 192"
+        --a darker grey if they have between 100% and 50% health
+        or player.health > basehealth/2 and "192 192 192"
+        --red if they're below half health but still alive
         or player.health > 0 and "224 0 0"
+        --off-black if they're dead
         or "32 32 32"
 
 ------ Graphing (each player) ---------
@@ -508,85 +529,114 @@ do
 end ---------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
--- Texture creation
+-- Image Creation
 -------------------------------------------------------------------------------
+
+--Declaration of the icon that will be used by the dialog at creation
 local icon
 do
   --square pixel size of both icons
   local size=32
   --edge for procedures
   local edge=size-1
-  --size of a row (width times byte width)
-  local row=size*4
 
   --function to initialize tables for both
   local make_pixels_table = loadstring(
-    string.format("return {%s}",string.rep("0,", size^2*4)))
+    string.format("return {%s}",string.rep("0,", size^2)))
 
-  function imagestuff(r,g,b)
+  --function returning a new table of the size of the icon
+  --  with 0 for all pixels,
+  --  followed by a function for making functions that
+  --  write pixels in that table by coordinate
+  function imagestuff()
     local pixels=make_pixels_table()
-    return pixels, function (pixel)
-      pixels[pixel+1]=r pixels[pixel+2]=g pixels[pixel+3]=b
-      pixels[pixel+4]=255 --pixel opaque
+    return pixels, function(n)
+      return function (x, y)
+        pixels[y*size+x+1]=n
+      end
     end
   end
-  local ipixels, ipixel = imagestuff(181,32,3)
 
+  --How "deep in" the "tips" go.
   local depth=10
+  --How far apart the edges of these "tips" are.
   local breadth=edge-depth
---make internal square for icon
-  for y=depth*row,breadth*row,row do
-    for x=depth*4,breadth*4,4 do
-      ipixel(y+x)
+
+---- Icon -------------------------------------------------
+  local ipixels, ipixel = imagestuff()
+  --redefine ipixel to  be the index 1 pixel writer
+  ipixel=ipixel(1)
+
+  --make body square
+  for y=depth*size,breadth*size,size do
+    for x=depth,breadth do
+      ipixels[y+x]=1
     end
   end
---make edges
+
+  --make tips
   for inward=0,depth do
-    for long=depth,breadth do
-      ipixel(inward*row + long*4) --top
-      ipixel(long*row + inward*4) --left
-      ipixel((edge-inward)*row + long*4) --bottom
-      ipixel(long*row + (edge-inward)*4) --left
+    for tipwide=depth,breadth do
+      ipixel(tipwide,      inward) --top
+      ipixel(inward,      tipwide) --left
+      ipixel(tipwide, edge-inward) --bottom
+      ipixel(edge-inward, tipwide) --left
     end
   end
-  icon=iup.imagergba{width=size, height=size, pixels=ipixels}
 
-  local chpixels, chpixel = imagestuff(200, 192, 160)
+  --create the image to be used for the dialog's icon
+  icon=iup.image{width=size, height=size, pixels=ipixels,
+    colors={"BGCOLOR","181 32 3"}}
 
-  --make edges
-  local inward=0
-  for long=depth,breadth do
-    chpixel(inward*row + long*4) --top
-    chpixel(long*row + inward*4) --left
-    chpixel((edge-inward)*row + long*4) --bottom
-    chpixel(long*row + (edge-inward)*4) --left
+---- Crosshair Cursor -------------------------------------
+  local ch_pixels, ch_pindex = imagestuff()
+
+  --How far in from the edges to start at.
+  local margin=0
+  --How many additional layers to draw.
+  local thickness=1
+
+  --Draw from the inside out so we can just overwrite
+  --  the indruding segments with the outer edges.
+  for t=thickness,0,-1 do
+    --Increase color index for each outer layer
+    local ch_pixel=ch_pindex(2-t)
+
+    --make tip edges
+    for tipwide=depth,breadth do
+      ch_pixel(tipwide, margin+t) --top
+      ch_pixel(margin+t, tipwide) --left
+      ch_pixel(tipwide, (edge-margin)-t) --bottom
+      ch_pixel((edge-margin)-t, tipwide) --right
+    end
+
+    --make other edges
+    for inward=margin, depth+t do
+      ch_pixel(inward,           depth+t) --left-top
+      ch_pixel(inward,      edge-depth-t) --left-bottom
+      ch_pixel(edge-inward,      depth+t) --right-top
+      ch_pixel(edge-inward, edge-depth-t) --right-bottom
+      ch_pixel(depth+t,           inward) --top-left
+      ch_pixel(edge-depth-t,      inward) --top-right
+      ch_pixel(depth+t,      edge-inward) --bottom-left
+      ch_pixel(edge-depth-t, edge-inward) --bottom-right
+    end
   end
 
-  local crosshair=--iup.imagergba{width=size, height=size, pixels=chpixels,
-    --hotspot=(size/2)..":"..(size/2)}
-  iup.image{width=16, height=16, pixels={
-  0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
-  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
-  1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
-  0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
-  },colors={"BGCOLOR","200 192 160"},hotspot="8:8"}
+  --create the cursor
+  local crosshair = iup.image{ width=size, height=size, pixels=ch_pixels,
+    colors={
+      "BGCOLOR", --transparency
+      "200 192 160", --the brightest point on the actual crosshair
+      "255 244 204"  --the brightest shade of that color so we can see it
+    }, hotspot="16:16"}
 
+  --assign it to each player's target
   for i=1,playercount do
     players[i].target.cursor=crosshair
   end
 end
+
 -------------------------------------------------------------------------------
 -- Program Start
 -------------------------------------------------------------------------------
@@ -602,11 +652,11 @@ iup.dialog{iup.hbox{
       combat,
       labels}}
   }
-  ,title="Krake-n-Bake!",icon=icon,
+  ;title="Krake-n-Bake!", icon=icon,
   bgcolor="96 96 96"}:show()
 
 --Run the simulation loop
-constantly.run="YES"
+simulation.run="YES"
 
 --Relinquish flow control to IUP
 iup.MainLoop()

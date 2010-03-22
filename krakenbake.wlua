@@ -9,9 +9,13 @@
 require "iuplua"
 
 --This line imports the PPlot library (which is required for the graph)
---  as a pcall. If you don't have it, it will simply remove all graphing
---  from the app rather than failing to launch entirely. (Of course, that
---  graph is now the major feature of the application, so try to include it.)
+--  as a pcall. If you don't have it, it will simply replace the function of
+--  the graph with a series of progress bars representing the players' health.
+--  (Of course, that graph is now the major feature of the application, so try
+--  to include it.)
+--    It will only make the substitution if showgraph is "false" (pcall's
+--  return in the event of an error), so you can remove the graph entirely by
+--  making it nil (commenting out the pcall'd require altogether).
 local showgraph=pcall(require,"iuplua_pplot")
 
 --This line attempts to import the cdluacontextplus library (CanvasDraw's
@@ -35,12 +39,14 @@ math.randomseed(os.time()) --For variable damage and square color
 --  I chose 8, but you can make it as many or as few as you want.
 local playercount = 8
 
---The size of the bars (and the default height of the target).
-local barwidth, barheight = 30, 200
-
 --Size of the graph.
-local graph_height=480
-local graph_width=600
+local graph_height=400
+local graph_width=600 --240 gives the old style thin bars and tiny targets
+
+--The height of the bars and the starting height of the target.
+--  Bar widths (etc) are now exclusively determined as
+--  graph_width/playercount.
+local targetheight, barheight = 30, 200
 
 --This is the list of colors for the squares.
 local colors={
@@ -154,9 +160,17 @@ local players, vboxes = {}, {}
 --The table for the bars for their health if the graph is not to be seen
 local graph
 do
+  --Determine the starting width of each player's column
+  local barwidth=math.floor(graph_width/playercount)
+
+  --The font for the health readouts...
+  local defaultbig=
+    string.gsub(iup.GetGlobal"DEFAULTFONT",--the default font
+    " %d*$", string.format(" %i", --with the size replaced
+    barwidth/3)) --This approximates a good "fill" of the default width
   --determine heights of healthbars if no graph and create the table
   local overheal_height, health_height
-  if not showgraph then
+  if showgraph==false then
     graph={}
     overheal_height=graph_height*((maxhealth-basehealth)/maxhealth)
     health_height=graph_height*(basehealth/maxhealth)
@@ -170,14 +184,15 @@ do
     player.coilbar = iup.progressbar{
         rastersize = barwidth.."x"..barheight,
         orientation="vertical",
-        max = maxcoil}
+        max = maxcoil, expand="horizontal"}
     player.target = iup.canvas{
-      rastersize = barwidth.."x"..barwidth,
+      rastersize = barwidth.."x"..targetheight,
       bgcolor = color(i)}
     player.healthtext= iup.text{
       alignment="ACENTER",
-      value=basehealth,
-      readonly="yes"}
+      value=basehealth, rastersize=barwidth.."x",expand="horizontal",
+      fgcolor="64 64 64", bgcolor="192 192 192",
+      font=defaultbig,readonly="yes"}
     --The functions for the target to note when the cursor is on it.
     function player.target:enterwindow_cb()
       player.focus=true end
@@ -191,7 +206,7 @@ do
     vboxes[i]=iup.vbox{player.coilbar, player.target, player.healthtext,
       alignment="ACENTER"}
 
-    if not showgraph then
+    if showgraph==false then
       --If there's no graph, make health bars
       player.overhealbar=iup.progressbar{
         rastersize = barwidth.."x"..overheal_height,
@@ -209,7 +224,7 @@ do
   end
 
   vboxes=iup.hbox(vboxes)
-  if not showgraph then
+  if showgraph==false then
     graph=iup.hbox(graph)
   end
 end
@@ -233,6 +248,8 @@ if showgraph then
       grid="YES",
       ["USE_GDI+"]="YES",
       EXPAND="HORIZONTAL",
+      bgcolor="32 32 32", gridcolor="64 64 64",
+      axs_xcolor="128 128 128", axs_ycolor="128 128 128",
     }
 
   for i=0, playercount-1 do --initialize all the data sets
@@ -245,6 +262,8 @@ if showgraph then
 end
 
 ------ Krakenstein / Medigun Toggle ---
+
+local labelcolor="192 192 192"
 
 local krakentoggle=iup.toggle{
   title="Krakenstein",
@@ -266,7 +285,12 @@ function meditoggle:action(state)
   end
 end
 
-local toggles=iup.radio{iup.vbox{krakentoggle,meditoggle}}
+local toggles=iup.frame{
+  bgcolor="192 192 192",
+  iup.radio{
+    iup.vbox{
+      krakentoggle,
+      meditoggle}}}
 
 ---- Combat slider ----------------------------------------
 local combat= iup.val{
@@ -281,18 +305,20 @@ local combat= iup.val{
 ------ Labels for combat levels -------
 local defaultbold=string.gsub(iup.GetGlobal"DEFAULTFONT",
   "(.+), (%d*)","%1, Bold %2")
+local labelcolor="224 224 224"
+local boldcolor=labelcolor
 local labels=iup.vbox{
-  iup.label{title="More Gun", font=defaultbold},
-  iup.label{title="Nightmare!"},
+  iup.label{title="More Gun", font=defaultbold, fgcolor=boldcolor},
+  iup.label{title="Nightmare!", fgcolor=labelcolor},
   iup.fill{},
-  iup.label{title="Ultra-Violence"},
+  iup.label{title="Ultra-Violence", fgcolor=labelcolor},
   iup.fill{},
-  iup.label{title="Hurt me plenty"},
+  iup.label{title="Hurt me plenty", fgcolor=labelcolor},
   iup.fill{},
-  iup.label{title="Hey, not too rough"},
+  iup.label{title="Hey, not too rough", fgcolor=labelcolor},
   iup.fill{},
-  iup.label{title="Less Gun", font=defaultbold},
-  iup.label{title="Cease fire!"},
+  iup.label{title="Less Gun", font=defaultbold, fgcolor=boldcolor},
+  iup.label{title="Cease fire!", fgcolor=labelcolor},
 }
 
 --A function that very slightly decreases a progress bar and re-increases it.
@@ -418,6 +444,11 @@ do
 
 ------ Health Display -----------------
       player.healthtext.value=string.format("%i",player.health)
+      player.healthtext.bgcolor=
+        player.health > basehealth and "224 224 224"
+        or player.health > basehealth/2 and  "192 192 192"
+        or player.health > 0 and "224 0 0"
+        or "32 32 32"
 
 ------ Graphing (each player) ---------
       --If it's been long enough since the last frame graphed
@@ -433,7 +464,7 @@ do
 
         --if there's no graph to show and the bars need to be updated
         --(save CPU cycles! avoid unnecessary jiggle!)
-        elseif player.lastupdate~=player.health then
+        elseif showgraph==false and player.lastupdate~=player.health then
           player.lastupdate=player.health
 
           player.overhealbar.value=
@@ -477,6 +508,86 @@ do
 end ---------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------
+-- Texture creation
+-------------------------------------------------------------------------------
+local icon
+do
+  --square pixel size of both icons
+  local size=32
+  --edge for procedures
+  local edge=size-1
+  --size of a row (width times byte width)
+  local row=size*4
+
+  --function to initialize tables for both
+  local make_pixels_table = loadstring(
+    string.format("return {%s}",string.rep("0,", size^2*4)))
+
+  function imagestuff(r,g,b)
+    local pixels=make_pixels_table()
+    return pixels, function (pixel)
+      pixels[pixel+1]=r pixels[pixel+2]=g pixels[pixel+3]=b
+      pixels[pixel+4]=255 --pixel opaque
+    end
+  end
+  local ipixels, ipixel = imagestuff(181,32,3)
+
+  local depth=10
+  local breadth=edge-depth
+--make internal square for icon
+  for y=depth*row,breadth*row,row do
+    for x=depth*4,breadth*4,4 do
+      ipixel(y+x)
+    end
+  end
+--make edges
+  for inward=0,depth do
+    for long=depth,breadth do
+      ipixel(inward*row + long*4) --top
+      ipixel(long*row + inward*4) --left
+      ipixel((edge-inward)*row + long*4) --bottom
+      ipixel(long*row + (edge-inward)*4) --left
+    end
+  end
+  icon=iup.imagergba{width=size, height=size, pixels=ipixels}
+
+  local chpixels, chpixel = imagestuff(200, 192, 160)
+
+  --make edges
+  local inward=0
+  for long=depth,breadth do
+    chpixel(inward*row + long*4) --top
+    chpixel(long*row + inward*4) --left
+    chpixel((edge-inward)*row + long*4) --bottom
+    chpixel(long*row + (edge-inward)*4) --left
+  end
+
+  local crosshair=--iup.imagergba{width=size, height=size, pixels=chpixels,
+    --hotspot=(size/2)..":"..(size/2)}
+  iup.image{width=16, height=16, pixels={
+  0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
+  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+  1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,
+  1,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,
+  0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,
+  },colors={"BGCOLOR","200 192 160"},hotspot="8:8"}
+
+  for i=1,playercount do
+    players[i].target.cursor=crosshair
+  end
+end
+-------------------------------------------------------------------------------
 -- Program Start
 -------------------------------------------------------------------------------
 
@@ -491,7 +602,8 @@ iup.dialog{iup.hbox{
       combat,
       labels}}
   }
-  ,title="Krake-n-Bake!"}:show()
+  ,title="Krake-n-Bake!",icon=icon,
+  bgcolor="96 96 96"}:show()
 
 --Run the simulation loop
 constantly.run="YES"

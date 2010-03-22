@@ -4,9 +4,9 @@ Now that you mention it, one second between direct-line-of-sight-to-each-player 
 
 To add skill to the Krakenstein (a skill mapping similar to a Medic's existing experience in juggling overheal) and make it less of a blind "aimbot magnet", Medics would have to keep focused on a target to increase the attach time up to the maximum 2 seconds until detachment. The time it would "coil up" would be multiplied by 1 + the number of teammates being healed, leading to a reasonable difficulty curve in healing larger numbers of patients at once.
 
-I arrived at this conclusion by writing a small IUPLua proof-of-concept app to playtest with:
+I arrived at this conclusion by writing a small IUPLua proof-of-concept app to playtest with (which has since grown to include graphed heal tracking, variable random damage, and original Medigun comparison):
 
-[CENTER][IMG]http://img444.imageshack.us/img444/8682/markiib.png[/IMG][/CENTER]
+[CENTER][IMG]http://img232.imageshack.us/img232/1706/markiii.png[/IMG][/CENTER]
 
 Each solid-colored rectangle represents a player (the colors were arbitrarily chosen just to distinguish each square), and the bars above each square represent the time until the beam would detach from that player. To target a player, you place your cursor within the square (no button holding involved). The numbers beneath the target region represent the player's health, which is actively charted over time below.
 

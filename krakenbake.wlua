@@ -46,7 +46,7 @@ local graph_width=600 --240 gives the old style thin bars and tiny targets
 --The height of the bars and the starting height of the target.
 --  Bar widths (etc) are now exclusively determined as
 --  graph_width/playercount.
-local targetheight, barheight = 70, 200
+local targetheight, barheight = 64, 200
 
 --This is the list of colors for the squares.
 local colors={
@@ -187,22 +187,27 @@ do
         rastersize = barwidth.."x"..barheight,
         orientation="vertical",
         max = maxcoil, expand="horizontal"}
+
     --The colored area to place the cursor in to "target" the player
     --  for healing.
     player.target = iup.canvas{
       rastersize = barwidth.."x"..targetheight,
-      bgcolor = color(i)}
+      bgcolor = color(i), border="no"}
     --The functions for the target to note when the cursor is on it.
     function player.target:enterwindow_cb()
       player.focus=true end
     function player.target:leavewindow_cb()
       player.focus=nil end
+
     --The text box reading how much health the player has.
     player.healthtext= iup.text{
       alignment="ACENTER", expand="horizontal",
       value=basehealth, rastersize=barwidth.."x",
       fgcolor="64 64 64", bgcolor="192 192 192",
-      font=defaultbig,readonly="yes"}
+      font=defaultbig,readonly="yes",
+      --text borders have more benefits than drawbacks
+      --border="no"
+      }
 
     --start everybody out with base health
     player.health=basehealth
@@ -252,7 +257,7 @@ if showgraph then
       AXS_XAUTOMAX="NO", AXS_XMAX=0,
       AXS_YLABEL="Health",
       AXS_XLABEL="Elapsed seconds",
-      grid="YES",
+      grid="YES", border="no",
       ["USE_GDI+"]="YES",
       EXPAND="HORIZONTAL",
       bgcolor="32 32 32", gridcolor="64 64 64",
@@ -272,7 +277,7 @@ end
 
 local krakentoggle=iup.toggle{
   title="Krakenstein",
-  value="ON"}
+  value="ON", expand="horizontal"}
 function krakentoggle:action(state)
   if state==1 then
     setrate(krakenstein_baserate,
@@ -283,7 +288,7 @@ function krakentoggle:action(state)
 end
 
 local meditoggle=iup.toggle{
-  title="Medigun"}
+  title="Medigun", expand="horizontal"}
 function meditoggle:action(state)
   if state==1 then
     setrate(24,10,5,3)

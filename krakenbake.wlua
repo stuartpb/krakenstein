@@ -2,6 +2,19 @@
 --  The Krakenstein Coil-Up Test App. Copyright (c) 2010 Stuart P. Bentley.  --
 -------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------
+-- For more information:
+-------------------------------------------------------------------------------
+
+local forumthread =
+  "http://forums.steampowered.com/forums/showthread.php?t=1164215"
+
+local projectpage = "http://launchpad.net/krakenstein"
+
+-------------------------------------------------------------------------------
+-- Library Requirements
+-------------------------------------------------------------------------------
+
 --This line imports the IUPLua library. (If you experience errors here,
 --  make sure that you've got the IUP 3.0 DLLs (or non-Windows equivalent)
 --  accessible to your Lua interpreter with the name used here
@@ -47,6 +60,9 @@ local graph_width=600 --240 gives the old style thin bars and tiny targets
 --  Bar widths (etc) are now exclusively determined as
 --  graph_width/playercount.
 local targetheight, barheight = 64, 200
+
+--The fraction of the target height for the Krakenstein heal targets.
+local kst_fraction = 2 --Half (32 pixels)
 
 --This is the list of colors for the squares.
 local colors={
@@ -144,10 +160,13 @@ end
 
 --Function that chooses player colors.
 local function color(position)
-  if position <= #colors then return colors[position]
-  else return string.format("%i %i %i",
+  --choose new color for uninitialized positions
+  if not colors[position] then
+    colors[position] = string.format("%i %i %i",
     math.random(255), math.random(255), math.random(255))
   end
+
+  return colors[position]
 end
 
 ---- Player Data (including controls) ---------------------
@@ -188,16 +207,31 @@ do
         orientation="vertical",
         max = maxcoil, expand="horizontal"}
 
+    local kst_size=targetheight/kst_fraction
     --The colored area to place the cursor in to "target" the player
     --  for healing.
-    player.target = iup.canvas{
-      rastersize = barwidth.."x"..targetheight,
-      bgcolor = color(i), border="no"}
+    player.smalltarget = iup.canvas{
+      rastersize = kst_size.."x"..kst_size,
+      bgcolor = color(i), border="no",
+      cx=barwidth/2-kst_size/2, cy=targetheight/2-kst_size/2,}
+    --The bigger version for the Medigun.
+    player.bigtarget = iup.canvas{
+      bgcolor = color(i),
+      border="no"}
     --The functions for the target to note when the cursor is on it.
-    function player.target:enterwindow_cb()
+    function player.smalltarget:enterwindow_cb()
       player.focus=true end
-    function player.target:leavewindow_cb()
+    function player.smalltarget:leavewindow_cb()
       player.focus=nil end
+    player.bigtarget.enterwindow_cb=
+      player.smalltarget.enterwindow_cb
+    player.bigtarget.leavewindow_cb=
+      player.smalltarget.leavewindow_cb
+    player.targetbox = iup.cbox{
+      rastersize = barwidth.."x"..targetheight,
+      player.smalltarget
+    }
+    player.target=iup.zbox{player.targetbox,player.bigtarget}
 
     --The text box reading how much health the player has.
     player.healthtext= iup.text{
@@ -269,11 +303,17 @@ if showgraph then
     iup.PPlotAdd(graph, 0, basehealth)
     iup.PPlotEnd(graph)
     graph.ds_linewidth=2
-    graph.ds_color=players[i+1].target.bgcolor
+    graph.ds_color=color(i+1)
   end
 end
 
 ------ Krakenstein / Medigun Toggle ---
+
+local function selecttarget (value)
+  for i,player in pairs(players) do
+    player.target.value=player[value]
+  end
+end
 
 local krakentoggle=iup.toggle{
   title="Krakenstein",
@@ -284,6 +324,7 @@ function krakentoggle:action(state)
       krakenstein_mintime,
       krakenstein_ramplength,
       krakenstein_multiplier)
+    selecttarget "targetbox"
   end
 end
 
@@ -292,6 +333,7 @@ local meditoggle=iup.toggle{
 function meditoggle:action(state)
   if state==1 then
     setrate(24,10,5,3)
+    selecttarget "bigtarget"
   end
 end
 
@@ -636,29 +678,76 @@ do
       "255 244 204"  --the brightest shade of that color so we can see it
     }, hotspot="16:16"}
 
-  --assign it to each player's target
+  --assign it to each player's targets
   for i=1,playercount do
-    players[i].target.cursor=crosshair
+    players[i].bigtarget.cursor=crosshair
+    players[i].smalltarget.cursor=crosshair
   end
+end
+
+---------------------------------------------------------------------------------
+-- Dialog Creation
+---------------------------------------------------------------------------------
+
+--declare the main window to show when starting the program
+local mainwindow
+do
+  --Function for making links
+  local function link_to(url)
+    return function(self) iup.Help(url) end
+  end
+
+  --Function to close the dialog and resume the simulation loop
+  local function close_and_resume(self)
+    simulation.run = "YES"
+    return iup.CLOSE
+  end
+
+  --Create the about dialog
+  local about=iup.dialog{
+    title="About Krake-n-Bake", dialogframe="YES",
+    size="150x70",close_cb=close_and_resume;
+    iup.vbox{alignment="ACENTER",nmargin="5x5",
+      iup.vbox{alignment="ACENTER",
+        iup.label{title="The Krakenstein Test App"},
+        iup.button{title="Forum thread", action=link_to(forumthread),
+          size="100x12"},
+        iup.button{title="Launchpad project", action=link_to(projectpage),
+          size="100x12"},
+      },
+      iup.fill{},
+      iup.hbox{
+        iup.fill{},
+        iup.button{title="OK",size="50x12",action=close_and_resume}}}}
+
+  --Create the main window
+  mainwindow=iup.dialog{
+    iup.hbox{
+      iup.vbox{
+        vboxes,
+        graph},
+      iup.vbox{alignment="ACENTER",
+        toggles,
+        iup.hbox{
+          combat,
+          labels},
+        iup.button{
+          title="About...",expand="horizontal",
+          action=function()
+            simulation.run = "NO"
+            about:popup()
+            end
+          }}}
+    ;title="Krake-n-Bake!", icon=icon,
+    bgcolor="96 96 96"}
 end
 
 -------------------------------------------------------------------------------
 -- Program Start
 -------------------------------------------------------------------------------
 
---Create and show the dialog
-iup.dialog{iup.hbox{
-  iup.vbox{
-    vboxes,
-    graph},
-  iup.vbox{alignment="ACENTER",
-    toggles,
-    iup.hbox{
-      combat,
-      labels}}
-  }
-  ;title="Krake-n-Bake!", icon=icon,
-  bgcolor="96 96 96"}:show()
+--Show the main window
+mainwindow:show()
 
 --Run the simulation loop
 simulation.run="YES"

@@ -31,15 +31,6 @@ require "iuplua"
 --  making it nil (commenting out the pcall'd require altogether).
 local showgraph=pcall(require,"iuplua_pplot")
 
---This line attempts to import the cdluacontextplus library (CanvasDraw's
---  GDI+ functionality). With it, the lines on the graph will draw with
---  anti-aliasing and look nice. Without it, the graph will just draw with
---  regular GDI with no changes necessary, so if it doesn't load correctly,
---  there's no problem. (Although, if it DOES load but the underlying
---  cdcontextplus.dll is missing, then you'll have problems in the form of
---  the graph simply showing up blank.)
-pcall(require,"cdluacontextplus")
-
 math.randomseed(os.time()) --For variable damage and square color
 
 -------------------------------------------------------------------------------
@@ -119,14 +110,14 @@ local maxcoil = 2
 --The Krakenstein's base healing rate.
 local krakenstein_baserate = 12
 --The time until The Krakenstein begins its ramp up.
-local krakenstein_mintime = 4
+local krakenstein_mintime = 6
 --The time it takes for The Krakenstein to reach its maximum heal rate.
 local krakenstein_ramplength = 8
 --The multiplier of the Krakenstein heal rate.
 local krakenstein_multiplier = 4
 
 --How much health The Krakenstein provides to the player in focus.
-local boost=0
+local boost=6
 
 -------------------------------------------------------------------------------
 -- Initialization
@@ -292,7 +283,7 @@ if showgraph then
       AXS_YLABEL="Health",
       AXS_XLABEL="Elapsed seconds",
       grid="YES", border="no",
-      ["USE_GDI+"]="YES",
+      USE_IMAGERGB="YES", FONT="Helvetica, 8",
       EXPAND="HORIZONTAL",
       bgcolor="32 32 32", gridcolor="64 64 64",
       axs_xcolor="128 128 128", axs_ycolor="128 128 128",

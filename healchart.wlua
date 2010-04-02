@@ -149,10 +149,10 @@ health=chart(0, 20, 1, {
 },namecolor)
 
 medigun = healing(24, 10, 5, 3)
-krakenstein = healing(12, 6, 8, 4)
+krakenstein = healing(12, 6, 9, 4)
 krakenstein_old = healing(12, 4, 8, 4)
 
-health.graph(krakenstein_old.healrate,"Krakenstein (old)","224 224 255")
+health.graph(krakenstein_old.healrate,"Krakenstein (old)","224 224 255",1)
 health.graph(medigun.healrate,"Medigun","255 0 0",3)
 
 local maxplayers=8

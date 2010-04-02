@@ -12,6 +12,20 @@ local forumthread =
 local projectpage = "http://launchpad.net/krakenstein"
 
 -------------------------------------------------------------------------------
+-- About This Version
+-------------------------------------------------------------------------------
+
+--My general rule with new versions is that I make a new one each time I have
+--  to take a new screenshot to represent it. That's how I came up with 1.4
+--  for the first "version" (my previous screenshot was named markiii.png).
+local version = "1.4";
+
+--When the EXE falls back to its embedded copy of the script, it is called
+--  as a function with "exe_message" (the reason that the external file
+--  failed to load) as a parameter. That's why exe_message is not defined
+--  in this script.
+
+-------------------------------------------------------------------------------
 -- Library Requirements
 -------------------------------------------------------------------------------
 
@@ -24,8 +38,6 @@ require "iuplua"
 --This line imports the PPlot library (which is required for the graph)
 --  as a pcall. If you don't have it, it will simply replace the function of
 --  the graph with a series of progress bars representing the players' health.
---  (Of course, that graph is now the major feature of the application, so try
---  to include it.)
 --    It will only make the substitution if showgraph is "false" (pcall's
 --  return in the event of an error), so you can remove the graph entirely by
 --  making it nil (commenting out the pcall'd require altogether).
@@ -58,7 +70,7 @@ local kst_fraction = 2 --Half (32 pixels)
 --This is the list of colors for the squares.
 local colors={
   "255 0 0", "0 0 255", "255 255 0", "0 255 255",
-  "255 0 255", "0 255 0", "128 0 0", "255 216 192" }
+  "255 0 255", "0 255 0", "160 64 0", "255 216 192" }
 
 ---- Graphing and Timing ----------------------------------
 
@@ -90,10 +102,8 @@ local maxhealth=300 --Overheal limit
 
 ------ Combat slider ------------------
 
---The maximum attack frequency.
-local nightmare=40
---The default attack frequency.
-local defaultcombat=10
+--The starting combat slider position.
+local defaultcombat=.5
 
 --The attack power of the random attacks.
 local damage=40
@@ -107,12 +117,17 @@ local dissipate=(maxhealth-basehealth)/20
 --The maximum time cap, in seconds.
 local maxcoil = 2
 
+--The base multiplier for coiling up.
+local basecoilmul = 1
+--The additional multiplier for each player being healed.
+local addcoilmul = 1
+
 --The Krakenstein's base healing rate.
 local krakenstein_baserate = 12
 --The time until The Krakenstein begins its ramp up.
 local krakenstein_mintime = 6
 --The time it takes for The Krakenstein to reach its maximum heal rate.
-local krakenstein_ramplength = 8
+local krakenstein_ramplength = 9
 --The multiplier of the Krakenstein heal rate.
 local krakenstein_multiplier = 4
 
@@ -160,6 +175,9 @@ local function color(position)
   return colors[position]
 end
 
+--Level of combat user is in (how often to successfully roll for damage).
+local combat
+
 ---- Player Data (including controls) ---------------------
 
 --The table storing all players
@@ -196,7 +214,7 @@ do
     player.coilbar = iup.progressbar{
         rastersize = barwidth.."x"..barheight,
         orientation="vertical",
-        max = maxcoil, expand="horizontal"}
+        expand="horizontal"}
 
     local kst_size=targetheight/kst_fraction
     --The colored area to place the cursor in to "target" the player
@@ -238,6 +256,8 @@ do
     player.health=basehealth
     --start everybody out at the base heal rate
     player.undamaged=0
+    --and uncoiled
+    player.coil=0
 
     --Put the controls together for their column in the window.
     vboxes[i]=iup.vbox{player.coilbar, player.target, player.healthtext,
@@ -338,14 +358,26 @@ local toggles=iup.frame{
 
 ---- Combat slider ----------------------------------------
 
-local combat= iup.val{
-  max=nightmare,
-  min=0, --by necessity cease-fire would be 0
+local combatslider= iup.val{
+  max=1, min=0, --not that these aren't the defaults but, you know
   value=defaultcombat,
   --crazy val not naming its type argument!
   type="VERTICAL", [1]="VERTICAL",
   expand="VERTICAL",
   }
+
+function combatslider:valuechanged_cb()
+  if tonumber(self.value) <= .5 then
+    combat=10*(tonumber(self.value)/.5)
+  else
+    combat=10+60*((tonumber(self.value)-.5)/.5)
+  end
+  --this isn't working for some reason
+  self.tip=string.format("Combat level: %i",combat)
+end
+
+--initialize the combat value
+combatslider:valuechanged_cb()
 
 ------ Labels for combat levels -------
 
@@ -417,27 +449,31 @@ do
     for i, player in pairs(players) do
 
       --Let's keep their current coil duration in a local for efficiency
-      local coil = tonumber(player.coilbar.value)
+      local coil = player.coil
 
 ------ Heal targeting -----------------
       --if the cursor is currently on this player's target
       --  and the target is not "dead" (no health in combat)
       if player.focus
-        and (player.health > 0 or tonumber(combat.value) < 1) then
+        and (player.health > 0 or tonumber(combat) < 1) then
 
         --if The Krakenstein is selected
         if krakentoggle.value=="ON" then
           --increase their coil duration
-          player.coilbar.value = math.min( coil +
+          player.coil = math.min( coil +
               --with a multiplier of 1 + the current number of heal targets
-              timeres * (1+healingplayers),
+              timeres * (basecoilmul+healingplayers*addcoilmul),
             maxcoil) --or just to the max if they'd surpass it
+
+          --update the display
+          player.coilbar.value=player.coil/maxcoil
 
           --heal this player alone a little
           player.health=math.min(player.health+boost*timeres,maxhealth)
 
         else --if the normal Medigun is selected
-          player.coilbar.value = maxcoil
+          player.coil=1
+          player.coilbar.value = 1
         end
 
           --stupid hack to keep Windows Vista / 7 from slowing the uptake
@@ -448,16 +484,19 @@ do
         --if The Krakenstein is selected
         if krakentoggle.value=="ON" then
           --reduce the bar (but not past the minimum)
-          player.coilbar.value = math.max(coil - timeres,0)
+          --also bind it within the current maximum
+          player.coil = math.min(math.max(coil - timeres,0),maxcoil)
+          player.coilbar.value = player.coil/maxcoil
 
         else --if the normal Medigun is selected
+          player.coil=0
           player.coilbar.value = 0
         end
       end
 
 ------ Healing ------------------------
       --If this player still has time left
-      if tonumber(player.coilbar.value)>0 then
+      if tonumber(player.coil)>0 then
 
         --increase the count of players being healed this frame by one
         hp_new=hp_new+1
@@ -478,13 +517,18 @@ do
 
 ------ Combat -------------------------
       --if the player is hit
-      if math.random(math.floor(100/timeres)) <= tonumber(combat.value) then
+      if math.random(math.floor(100/timeres)) <= combat then
 
         --reduce their health (not below 0)
         player.health=math.max(player.health-damage, 0)
 
-        --If player is now dead, remove all coil
-        if player.health ==0 then player.coilbar.value=0 end
+        --If player is now dead and they were being healed, stop the healing
+        --  and decrement the count of players being healed this frame
+        if player.health == 0 and player.coil > 0 then
+          player.coil=0
+          player.coilbar.value=0
+          hp_new=hp_new-1
+        end
 
         --reset their time since last damage
         player.undamaged=0
@@ -695,12 +739,33 @@ do
   end
 
   --Create the about dialog
-  local about=iup.dialog{
+  local about
+  if exe_message then
+    about=iup.dialog{
+    title="About Krake-n-Bake", dialogframe="YES",
+    close_cb=close_and_resume;
+    iup.vbox{alignment="ACENTER",nmargin="5x5",gap="3x3",
+      iup.vbox{alignment="ACENTER",
+        iup.label{title=string.format(
+          "The Krakenstein Test App %s",version)},
+        iup.button{title="Forum thread", action=link_to(forumthread),
+          size="100x12"},
+        iup.button{title="Launchpad project", action=link_to(projectpage),
+          size="100x12"},
+      },
+      iup.label{title="External file load attempt results:"},
+      iup.label{title=exe_message},
+      iup.hbox{
+        iup.fill{},
+        iup.button{title="OK",size="50x12",action=close_and_resume}}}}
+  else
+    about=iup.dialog{
     title="About Krake-n-Bake", dialogframe="YES",
     size="150x70",close_cb=close_and_resume;
     iup.vbox{alignment="ACENTER",nmargin="5x5",
       iup.vbox{alignment="ACENTER",
-        iup.label{title="The Krakenstein Test App"},
+        iup.label{title=string.format(
+          "The Krakenstein Test App %s",version)},
         iup.button{title="Forum thread", action=link_to(forumthread),
           size="100x12"},
         iup.button{title="Launchpad project", action=link_to(projectpage),
@@ -710,6 +775,7 @@ do
       iup.hbox{
         iup.fill{},
         iup.button{title="OK",size="50x12",action=close_and_resume}}}}
+  end
 
   --Create the main window
   mainwindow=iup.dialog{
@@ -720,7 +786,7 @@ do
       iup.vbox{alignment="ACENTER",
         toggles,
         iup.hbox{
-          combat,
+          combatslider,
           labels},
         iup.button{
           title="About...",expand="horizontal",
@@ -728,8 +794,10 @@ do
             simulation.run = "NO"
             about:popup()
             end
-          }}}
-    ;title="Krake-n-Bake!", icon=icon,
+          }}};
+    --change the title to signify if the script is running from the EXE
+    title= exe_message and "Krake-n-Bake.EXE!" or "Krake-n-Bake!",
+    icon=icon,
     bgcolor="96 96 96"}
 end
 

@@ -115,12 +115,13 @@ local dissipate=(maxhealth-basehealth)/20
 ---- Krakenstein stats ------------------------------------
 
 --The maximum time cap, in seconds.
-local maxcoil = 2
+local basecoilcap = .5
+local addcoilcap=.5
 
 --The base multiplier for coiling up.
-local basecoilmul = 1
+local basecoilmul = 1.5
 --The additional multiplier for each player being healed.
-local addcoilmul = 1
+local addcoilmul = 1.5
 
 --The Krakenstein's base healing rate.
 local krakenstein_baserate = 12
@@ -442,6 +443,9 @@ do
   --The function that is executed each frame.
   function simulation:action_cb()
 
+    local maxcoil=basecoilcap+healingplayers*addcoilcap
+    local barmax=basecoilcap+playercount*addcoilcap
+
     --The running total of players being healed this frame.
     local hp_new = 0
 
@@ -463,10 +467,11 @@ do
           player.coil = math.min( coil +
               --with a multiplier of 1 + the current number of heal targets
               timeres * (basecoilmul+healingplayers*addcoilmul),
-            maxcoil) --or just to the max if they'd surpass it
+            math.max(maxcoil,player.coil)) --or just to the max if they'd surpass it
+            --(or hold at their current coil amount if they have more than the max)
 
           --update the display
-          player.coilbar.value=player.coil/maxcoil
+          player.coilbar.value=player.coil/barmax
 
           --heal this player alone a little
           player.health=math.min(player.health+boost*timeres,maxhealth)
@@ -485,8 +490,8 @@ do
         if krakentoggle.value=="ON" then
           --reduce the bar (but not past the minimum)
           --also bind it within the current maximum
-          player.coil = math.min(math.max(coil - timeres,0),maxcoil)
-          player.coilbar.value = player.coil/maxcoil
+          player.coil = math.max(coil - timeres,0)
+          player.coilbar.value = player.coil/barmax
 
         else --if the normal Medigun is selected
           player.coil=0

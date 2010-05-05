@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg2826"
+   version="1.1"
+   inkscape:version="0.47pre4 "
+   width="256"
+   height="256"
+   sodipodi:docname="frankenstein.jpg">
+  <metadata
+     id="metadata2832">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs2830">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 0.5 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="1 : 0.5 : 1"
+       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
+       id="perspective2834" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1680"
+     inkscape:window-height="988"
+     id="namedview2828"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="1.2056194"
+     inkscape:cx="-103.02849"
+     inkscape:cy="188.25309"
+     inkscape:window-x="1272"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="ref"
+     sodipodi:insensitive="true"
+     style="display:none">
+    <image
+       xlink:href="file:///C:/Users/Stuart/Pictures/tf2/krakenstein/frankenstein.jpg"
+       width="82.633484"
+       height="188.6356"
+       id="image2836"
+       x="86.683258"
+       y="64.461327" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer1"
+     inkscape:label="body"
+     style="display:inline">
+    <g
+       id="g2864"
+       inkscape:tile-cx="65.725744"
+       inkscape:tile-cy="126.26445"
+       inkscape:tile-w="123.18941"
+       inkscape:tile-h="237.77026"
+       inkscape:tile-x0="4.131037"
+       inkscape:tile-y0="7.379319"
+       transform="translate(0.6795529,1.7355505)">
+      <path
+         sodipodi:nodetypes="cccccccccccc"
+         id="path2845"
+         d="m 108.21093,71.39572 -4.91201,4.912548 6.52491,8.431068 -2.93254,57.477894 -5.57184,11.2903 -5.278581,9.82403 -3.079173,30.49847 -0.146627,36.21694 3.717523,15.10261 30.787858,0 0,-173.75386 -19.10952,0 z"
+         style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cccccccccc"
+         id="path2853"
+         d="m 107.33117,134.5193 -4.32551,-0.0733 0.0733,-4.25219 -4.105566,-0.36656 -0.513195,11.36361 4.472131,-0.0733 0.0733,-4.17888 4.2522,0 0.0733,-2.41935 3e-5,-3e-5 z"
+         style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="cssssssssssscsssssssssscc"
+         id="path2855"
+         d="m 126.88057,71.39572 c 0,0 7.29811,-69.7584718 -46.608606,-63.6357054 -13.859933,1.5742218 -6.381086,14.8015294 0.24071,20.1831844 2.723567,2.213494 0.0553,9.481695 -8.964817,2.312609 -2.232941,-1.774717 -10.799844,-20.9211519 -16.005592,-18.64359 -6.9998,3.062476 -4.451858,11.754602 -0.918025,20.479099 3.570962,8.816162 6.972317,14.427944 10.701899,17.165981 1.963464,1.441458 -0.831497,4.42412 -5.445051,6.653794 -1.70396,0.823503 -9.531597,-4.036926 -11.866698,-7.061531 -1.920231,-2.487233 11.94404,5.914598 12.351906,2.579918 C 60.637852,49.20926 51.27685,36.247829 49.218992,31.759835 44.23149,20.882569 41.645597,14.044147 33.935213,14.044147 c -11.612289,0 -23.279949,14.09706 -23.279949,14.09706 0,0 8.261465,-7.906063 19.132703,-6.223398 2.925067,0.452746 5.420553,-0.123772 9.291719,5.37278 2.088892,2.965957 13.568173,17.7517 8.051442,14.877506 -6.227051,-3.244268 -8.469713,3.371926 -6.477857,8.278869 1.980188,4.878198 11.708149,3.300111 13.289241,12.178809 3.893791,21.865767 7.353729,10.8265 20.85383,-14.731638 1.660506,-3.143639 -11.402872,-8.015221 -12.663233,-16.203875 -0.591535,-3.843245 5.836983,5.805947 9.687724,7.361307 7.04189,2.844303 6.487807,3.301255 13.956125,0.233313 C 104.2139,31.711092 77.883563,15.934521 89.342012,17.552781 117.58902,21.542066 120.74102,71.39572 120.74102,71.39572 l 6.13955,0 z"
+         style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="ccsssssscsssssscc"
+         id="path2857"
+         d="M 122.35391,71.39572 C 109.93881,47.578995 107.53117,31.826594 88.418284,43.107397 77.435778,48.50047 73.703119,64.922311 65.343439,76.18155 62.958535,79.39366 42.986874,94.981179 37.656705,106.71594 34.817634,112.96637 27.227971,101.29706 28.366644,96.12163 30.338178,87.160731 59.975042,73.113585 33.312079,62.537881 22.661676,58.313463 14.514128,61.372527 13.569498,49.827306 c -0.524479,-6.410155 10.053807,-15.7398 13.782964,-11.436927 3.81231,4.398818 -1.173018,12.903201 -1.173018,12.903201 0,0 24.046874,-13.782965 2.639292,-22.580601 C 21.146826,25.560139 3.0123337,39.124049 4.1853519,47.774524 5.3583701,56.425 7.3525837,64.210244 28.33896,71.39572 c 19.18962,6.570289 -44.99722,15.270339 8.876377,59.16711 6.445246,5.25165 6.369138,-29.89616 23.416829,-35.298355 23.716596,-7.515491 28.180782,-46.3009 35.980476,-45.216857 9.976428,1.386576 12.478048,21.348102 12.478048,21.348102 l 13.26322,0 z"
+         style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="ccsssccscssc"
+         id="path2859"
+         d="m 109.08414,71.39572 10.44853,0 c 0,0 -8.05549,-14.597565 -19.04569,-10.450319 -10.990206,4.147245 -24.253539,51.282729 -26.458643,67.526789 -3.824187,28.17116 -2.698404,90.7864 -26.749735,102.54065 -8.721554,4.26236 -15.966896,4.87302 -23.639301,-0.72576 -4.211378,-2.30657 -9.230482,-8.62659 -3.110434,-11.81965 0,0 -8.096216,0.59545 -8.294492,4.76933 -1.059334,22.29987 23.477109,21.88284 40.850371,18.45524 33.671504,-17.84033 30.43709,-57.31725 35.873676,-92.06885 3.485,-22.27673 6.921085,-76.701316 16.173618,-81.026821 3.81917,-1.785437 3.9521,2.799391 3.9521,2.799391 z"
+         style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         sodipodi:nodetypes="csssssscsssssscc"
+         id="path2862"
+         d="m 123.38056,71.39572 c 0,0 -4.97669,-24.831631 -11.61229,-32.296674 -6.63559,-7.465042 -9.04414,-10.860098 -12.569308,-7.542302 -2.458123,2.313525 -12.1309,30.938929 -13.350974,39.838976 -1.117156,8.149292 16.389762,45.00809 -6.128518,33.97923 -15.51215,-7.597452 -20.479167,0.66932 -23.660888,7.26331 -2.211717,4.5837 -9.632575,74.19808 -17.074471,76.59108 -17.738845,5.70406 -19.932156,-54.76546 -19.932156,-54.76546 0,0 -10.524008,42.71905 2.721086,62.28234 11.620301,17.16345 18.416205,13.58686 28.615995,1.19234 8.134623,-9.88498 12.916681,-71.83516 20.712407,-75.7934 5.960615,-3.02647 20.172898,-1.16855 25.114659,1.14298 9.450518,4.42052 5.442048,-26.241288 2.073626,-44.79026 -1.372861,-7.559962 6.428232,-13.68591 10.160752,-13.68591 3.73252,0 4.97669,6.58375 4.97669,6.58375 l 9.95339,0 z"
+         style="fill:#000000;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <use
+       x="0"
+       y="0"
+       inkscape:tiled-clone-of="#g2864"
+       xlink:href="#g2864"
+       transform="matrix(-1,0,0,1,256,1.2447101e-8)"
+       id="use2880"
+       width="256"
+       height="256" />
+  </g>
+</svg>

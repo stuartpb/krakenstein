@@ -176,10 +176,24 @@ local function color(position)
   return colors[position]
 end
 
---Level of combat user is in (how often to successfully roll for damage).
+--Level of combat players are in (how often to successfully roll for damage).
 local combat
 
 ---- Player Data (including controls) ---------------------
+
+--A function that very slightly decreases a progress bar and re-increases it.
+--  Without this stupid hack, the progress bars on Windows Vista/7 will
+--  only slowly increase the green level to the value you've set it to,
+--  causing them to "snap" suddenly to the correct value when they start
+--  unexpectedly decreasing.
+local function jig(jigbar)
+  jigbar.value = jigbar.value -.001
+  jigbar.value = jigbar.value +.001
+end
+
+--The maximum possible max coil amount (the full position for all bars).
+--Used in player control creation and simulation loop function.
+local barmax=basecoilcap+playercount*addcoilcap
 
 --The table storing all players
 --  and the table for their coil/target/health text columns in the window.
@@ -190,6 +204,8 @@ local graph
 do
   --Determine the starting width of each player's column
   local barwidth=math.floor(graph_width/playercount)
+  local sigbarwidth=barwidth/5
+  local coilbarwidth=sigbarwidth*4
 
   --The font for the health readouts...
   local defaultbig=
@@ -205,15 +221,21 @@ do
     health_height=graph_height*(basehealth/maxhealth)
   end
 
+
   for i=1,playercount do --This loop is evaluated once for each player
     --Create a table for this player (placed in the players table).
-    local player={}; players[i] = player
+    local player={bars={}}; players[i] = player
 
     --Create the controls for this player.
     --The progress bar representing how far "coiled" the Krakenstein beam
     --  is around the player.
-    player.coilbar = iup.progressbar{
-        rastersize = barwidth.."x"..barheight,
+    player.bars.coil = iup.progressbar{
+        rastersize = coilbarwidth.."x"..barheight,
+        orientation="vertical",
+        expand="horizontal"}
+
+    player.bars.sigmax = iup.progressbar{
+        rastersize = sigbarwidth.."x"..barheight,
         orientation="vertical",
         expand="horizontal"}
 
@@ -258,10 +280,27 @@ do
     --start everybody out at the base heal rate
     player.undamaged=0
     --and uncoiled
-    player.coil=0
+    player.model={coil=0,sigmax=0}
+
+    function player:setbar(which,value)
+      --to save CPU, only update bars when the value actually changes
+      if self.model[which]~=value then
+        --note if the value is increasing
+        local increase = self.model[which] < value
+
+        --update the values
+        self.model[which]=value
+        self.bars[which].value=value/barmax
+
+        --if the value is increasing, fake a decrease to update it instantly
+        if increase then jig(self.bars[which]) end
+      end
+    end
 
     --Put the controls together for their column in the window.
-    vboxes[i]=iup.vbox{player.coilbar, player.target, player.healthtext,
+    vboxes[i]=iup.vbox{
+      iup.hbox{player.bars.coil,player.bars.sigmax},
+        player.target, player.healthtext,
       alignment="ACENTER"}
 
     if showgraph==false then
@@ -406,16 +445,6 @@ local labels=iup.vbox{
   iup.label{title="Cease fire!", fgcolor=labelcolor},
 }
 
---A function that very slightly decreases a progress bar and re-increases it.
---  Without this stupid hack, the progress bars on Windows Vista/7 will
---  only slowly increase the green level to the value you've set it to,
---  causing them to "snap" suddenly to the correct value when they start
---  unexpectedly decreasing.
-local function jig(jigbar)
-  jigbar.value = jigbar.value -.001
-  jigbar.value = jigbar.value +.001
-end
-
 -------------------------------------------------------------------------------
 -- Simulation Loop
 -------------------------------------------------------------------------------
@@ -444,7 +473,6 @@ do
   function simulation:action_cb()
 
     local maxcoil=basecoilcap+healingplayers*addcoilcap
-    local barmax=basecoilcap+playercount*addcoilcap
 
     --The running total of players being healed this frame.
     local hp_new = 0
@@ -453,7 +481,7 @@ do
     for i, player in pairs(players) do
 
       --Let's keep their current coil duration in a local for efficiency
-      local coil = player.coil
+      local coil = player.model.coil
 
 ------ Heal targeting -----------------
       --if the cursor is currently on this player's target
@@ -464,44 +492,35 @@ do
         --if The Krakenstein is selected
         if krakentoggle.value=="ON" then
           --increase their coil duration
-          player.coil = math.min( coil +
+          player:setbar("coil", math.min( coil +
               --with a multiplier of 1 + the current number of heal targets
               timeres * (basecoilmul+healingplayers*addcoilmul),
-            math.max(maxcoil,player.coil)) --or just to the max if they'd surpass it
-            --(or hold at their current coil amount if they have more than the max)
-
-          --update the display
-          player.coilbar.value=player.coil/barmax
+            --or just to the max if they'd surpass it (or hold at their
+            --current coil amount if they have more than the max)
+            math.max(maxcoil,player.model.coil)))
 
           --heal this player alone a little
           player.health=math.min(player.health+boost*timeres,maxhealth)
 
         else --if the normal Medigun is selected
-          player.coil=1
-          player.coilbar.value = 1
+          player:setbar("coil",barmax)
         end
-
-          --stupid hack to keep Windows Vista / 7 from slowing the uptake
-          jig(player.coilbar)
 
       else --if the cursor is not on their target
 
         --if The Krakenstein is selected
         if krakentoggle.value=="ON" then
-          --reduce the bar (but not past the minimum)
-          --also bind it within the current maximum
-          player.coil = math.max(coil - timeres,0)
-          player.coilbar.value = player.coil/barmax
+          --reduce the coil (but not past the minimum)
+          player:setbar("coil",math.max(coil - timeres,0))
 
         else --if the normal Medigun is selected
-          player.coil=0
-          player.coilbar.value = 0
+          player:setbar("coil",0)
         end
       end
 
 ------ Healing ------------------------
       --If this player still has time left
-      if tonumber(player.coil)>0 then
+      if tonumber(player.model.coil)>0 then
 
         --increase the count of players being healed this frame by one
         hp_new=hp_new+1
@@ -511,6 +530,11 @@ do
           healrate(player.undamaged)*timeres,
           maxhealth)
 
+        if krakentoggle.value=="ON" then
+          player:setbar("sigmax",maxcoil)
+        else
+          player:setbar("sigmax",barmax)
+        end
       else --if this player is not currently being healed
 
         --If they have overheal
@@ -518,6 +542,8 @@ do
           --Dissipate it
           player.health=math.max(player.health-dissipate*timeres,basehealth)
         end
+
+        player:setbar("sigmax",0)
       end
 
 ------ Combat -------------------------
@@ -529,9 +555,8 @@ do
 
         --If player is now dead and they were being healed, stop the healing
         --  and decrement the count of players being healed this frame
-        if player.health == 0 and player.coil > 0 then
-          player.coil=0
-          player.coilbar.value=0
+        if player.health == 0 and player.model.coil > 0 then
+          player.setbar("coil",0)
           hp_new=hp_new-1
         end
 

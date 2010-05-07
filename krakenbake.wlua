@@ -149,14 +149,14 @@ local healrate; do
   local maxtime=mintime+ramplength
 
   function healrate(time)
-      return
-        --The fraction of the distance between the start and the end
-        -- of the linear curve (0 if not there yet, 1 if past)
-        (((math.max(mintime,math.min(maxtime,time))-mintime)/ramplength
-        --Times the amount the multiplier can increase
-        --  plus the minimum multiplier (1)
-        * increase) + 1)
-        * baserate
+    return
+      --The fraction of the distance between the start and the end
+      -- of the linear curve (0 if not there yet, 1 if past)
+      (((math.max(mintime,math.min(maxtime,time))-mintime)/ramplength
+      --Times the amount the multiplier can increase
+      --  plus the minimum multiplier (1)
+      * increase) + 1)
+      * baserate
   end
 
   function setrate(...)

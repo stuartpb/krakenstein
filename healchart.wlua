@@ -167,8 +167,10 @@ medigun = healing(24, 10, 5, 3)
 krakenstein = healing(12, 6, 9, 4)
 krakenstein_old = healing(12, 4, 8, 4)
 
-medichart.graph(krakenstein_old.healrate,"Krakenstein (old)","224 224 255",1)
-medichart.graph(medigun.healrate,"Medigun","255 0 0",3)
+medichart.graph(krakenstein_old.healrate,
+  "Krakenstein (old)","224 224 255",1)
+medichart.graph(medigun.healrate,
+  "Medigun","255 0 0",3)
 
 local maxplayers=8
 local reddiv=64/maxplayers

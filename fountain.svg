@@ -15,7 +15,8 @@
    inkscape:version="0.47pre4 "
    width="256"
    height="256"
-   sodipodi:docname="fountain.svg">
+   sodipodi:docname="fountain.svg"
+   style="display:inline">
   <metadata
      id="metadata2832">
     <rdf:RDF>
@@ -29,15 +30,7 @@
     </rdf:RDF>
   </metadata>
   <defs
-     id="defs2830">
-    <inkscape:perspective
-       sodipodi:type="inkscape:persp3d"
-       inkscape:vp_x="0 : 0.5 : 1"
-       inkscape:vp_y="0 : 1000 : 0"
-       inkscape:vp_z="1 : 0.5 : 1"
-       inkscape:persp3d-origin="0.5 : 0.33333333 : 1"
-       id="perspective2834" />
-  </defs>
+     id="defs2830" />
   <sodipodi:namedview
      pagecolor="#ffffff"
      bordercolor="#666666"
@@ -59,21 +52,7 @@
      inkscape:window-x="1272"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg2826" />
-  <g
-     inkscape:groupmode="layer"
-     id="layer2"
-     inkscape:label="ref"
-     sodipodi:insensitive="true"
-     style="display:none">
-    <image
-       xlink:href="file:///C:/Users/Stuart/Pictures/tf2/krakenstein/frankenstein.jpg"
-       width="82.633484"
-       height="188.6356"
-       id="image2836"
-       x="86.683258"
-       y="64.461327" />
-  </g>
+     inkscape:current-layer="layer1" />
   <g
      inkscape:groupmode="layer"
      id="layer1"

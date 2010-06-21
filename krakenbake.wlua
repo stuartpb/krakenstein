@@ -18,7 +18,9 @@ local projectpage = "http://launchpad.net/krakenstein"
 --My general rule with new versions is that I make a new one each time I have
 --  to take a new screenshot to represent it. That's how I came up with 1.4
 --  for the first "version" (my previous screenshot was named markiii.png).
-local version = "1.4";
+--  I'll also increment the version when the mechanic changes.
+--  Level-3 version numbers are for bugfixes.
+local version = "1.4.1";
 
 --When the EXE falls back to its embedded copy of the script, it is called
 --  as a function with "exe_message" (the reason that the external file
@@ -116,7 +118,7 @@ local dissipate=(maxhealth-basehealth)/20
 
 --The maximum time cap, in seconds.
 local basecoilcap = .5
-local addcoilcap=.5
+local addcoilcap= .5
 
 --The base multiplier for coiling up.
 local basecoilmul = 1.5
@@ -133,7 +135,7 @@ local krakenstein_ramplength = 9
 local krakenstein_multiplier = 4
 
 --How much health The Krakenstein provides to the player in focus.
-local boost=6
+local boost = 6
 
 -------------------------------------------------------------------------------
 -- Initialization
@@ -556,7 +558,7 @@ do
         --If player is now dead and they were being healed, stop the healing
         --  and decrement the count of players being healed this frame
         if player.health == 0 and player.model.coil > 0 then
-          player.setbar("coil",0)
+          player:setbar("coil",0)
           hp_new=hp_new-1
         end
 

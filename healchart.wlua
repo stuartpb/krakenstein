@@ -173,11 +173,12 @@ medichart.graph(medigun.healrate,
   "Medigun","255 0 0",3)
 
 local maxplayers=8
+local boost=6
 local reddiv=64/maxplayers
 local greendiv=128/maxplayers
 for hts=1,maxplayers do
   local colpos=maxplayers-hts+1
-  medichart.graph(function(x) return krakenstein.healrate(x)+6/hts end,
+  medichart.graph(function(x) return krakenstein.healrate(x)+boost/hts end,
   "Krakenstein ("..hts.." target avg.)",
   string.format("%i %i 255",reddiv*colpos+64,greendiv*colpos+64),
   hts<=5 and 2 or 1)
@@ -263,8 +264,24 @@ medichart.graph(simdrain{
 
 --]=]--------------------------------------------------------------------------
 
+
+--[=[--- Legend toggle -------------------------------------------------------
+local ltog = iup.toggle{
+  title="Show legend", value="YES"
+}
+
+function ltog:action(enum)
+  medichart.pplot.legendshow = (enum==1) and "YES" or "NO"
+  medichart.pplot.redraw = nil
+end
+
+---]=]-------------------------------------------------------------------------
+
 chartwin=iup.dialog{
-  medichart.pplot
+  iup.vbox{alignment="ARIGHT",
+  medichart.pplot,
+  ltog
+  }
 }
 
 chartwin:show()
